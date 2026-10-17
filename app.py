@@ -13,7 +13,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Ler os dados da folha (Certifique-se de que a folha se chama 'Sheet1' ou mude o nome abaixo)
 try:
-df = conn.read(spreadsheet="COLE_AQUI_O_LINK_DA_SUA_FOLHA_DO_GOOGLE_SHEETS", worksheet="Sheet1", ttl="10m")
+    df = conn.read(spreadsheet="COLE_AQUI_O_LINK_DA_SUA_FOLHA_DO_GOOGLE_SHEETS", worksheet="Sheet1", ttl="10m")
 
     # Mostrar métricas rápidas ou a tabela na aplicação
     st.success("Dados carregados com sucesso!")
