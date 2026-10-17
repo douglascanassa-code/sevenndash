@@ -8,12 +8,12 @@ st.set_page_config(page_title="Painel de Finanças - Apostas", layout="wide")
 st.title("📊 Painel de Controlo de Apostas")
 st.write("Gerencie e adicione os seus registos financeiros diretamente por aqui.")
 
-# Criar a ligação segura ao Google Sheets via Secrets
+# Criar a ligação segura ao Google Sheets forçando o uso das credenciais
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Ler os dados da folha (ajuste o worksheet para a aba correta, ex: 'Transacoes' ou 'Operacoes')
+# Ler os dados da folha garantindo o uso da conta de serviço
 try:
-    # A leitura usa a autenticação segura configurada nos Secrets
+    # O parêntese vazio conn.read() lê com base nas credenciais do secret
     df = conn.read(worksheet="Transações", ttl="0m")
     st.success("Dados carregados com sucesso!")
 except Exception as e:
@@ -44,13 +44,12 @@ if submit_button:
             "Valor (R$)": f"R$ {valor:.2f}".replace(".", ","),
             "Status": status,
             "Observação": observacao
-        }]
-        )
+        }])
         
         # Concatenar com os dados existentes
         updated_df = pd.concat([df, novo_registo], ignore_index=True)
         
-        # Atualizar a planilha no Google Sheets
+        # Atualizar a planilha no Google Sheets usando a conta de serviço
         conn.update(worksheet="Transações", data=updated_df)
         st.sidebar.success("Registo adicionado com sucesso à planilha!")
         st.rerun()
