@@ -13,7 +13,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Ler os dados da folha (Certifique-se de que a folha se chama 'Sheet1' ou mude o nome abaixo)
 try:
-    df = pd.read_csv("https://docs.google.com/spreadsheets/d/1ZNxM8HTKiR4OpQ318SqxKhXX54Pt7kZaSvyugub6fxY/export?format=csv")c
+    df = pd.read_csv("https://docs.google.com/spreadsheets/d/1ZNxM8HTKiR4OpQ318SqxKhXX54Pt7kZaSvyugub6fxY/export?format=csv")
     # Mostrar métricas rápidas ou a tabela na aplicação
     st.success("Dados carregados com sucesso!")
     st.dataframe(df)
