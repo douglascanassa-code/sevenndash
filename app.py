@@ -14,7 +14,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 # URL da folha de cálculo
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1ZNxM8HTKiR4OpQ318SqxKhXX54Pt7kZaSvyugub6fxY/edit"
 
-# Ler os dados especificando o link e a aba
+# Ler os dados especificando corretamente o link e a aba 'Transações'
 try:
     df = conn.read(spreadsheet=SHEET_URL, worksheet="Transações", ttl="0m")
     st.success("Dados carregados com sucesso!")
