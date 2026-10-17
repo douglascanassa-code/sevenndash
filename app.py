@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from streamlit_gsheets import GSheetsConnection
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # Configuração da página
 st.set_page_config(page_title="Painel de Finanças - Apostas", layout="wide")
@@ -8,15 +9,30 @@ st.set_page_config(page_title="Painel de Finanças - Apostas", layout="wide")
 st.title("📊 Painel de Controlo de Apostas")
 st.write("Gerencie e adicione os seus registos financeiros diretamente por aqui.")
 
-# Criar a ligação segura ao Google Sheets
-conn = st.connection("gsheets", type=GSheetsConnection)
+# Função para autenticar e carregar dados via gspread
+@st.cache_resource
+def get_sheet_connection():
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    
+    # Extrai as credenciais do st.secrets
+    creds_dict = dict(st.secrets["gsheets"])
+    if "private_key" in creds_dict:
+        creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+        
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    client = gspread.authorize(creds)
+    
+    spreadsheet_url = "https://docs.google.com/spreadsheets/d/1ZNxM8HTKiR4OpQ318SqxKhXX54Pt7kZaSvyugub6fxY/edit"
+    sheet = client.open_by_url(spreadsheet_url).worksheet("Transações")
+    return sheet
 
-# URL da folha de cálculo
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1ZNxM8HTKiR4OpQ318SqxKhXX54Pt7kZaSvyugub6fxY/edit"
-
-# Ler os dados especificando corretamente o link e a aba 'Transações'
 try:
-    df = conn.read(spreadsheet=SHEET_URL, worksheet="Transações", ttl="0m")
+    sheet = get_sheet_connection()
+    data = sheet.get_all_records()
+    df = pd.DataFrame(data)
     st.success("Dados carregados com sucesso!")
 except Exception as e:
     st.error(f"Erro ao carregar dados: {e}")
@@ -37,22 +53,18 @@ with st.sidebar.form("form_cadastro"):
 
 if submit_button:
     try:
-        # Novo registo formatado
-        novo_registo = pd.DataFrame([{
-            "Data": str(data_aposta),
-            "Plataforma": plataforma,
-            "Usuário/Conta": usuario,
-            "Tipo": tipo,
-            "Valor (R$)": f"R$ {valor:.2f}".replace(".", ","),
-            "Status": status,
-            "Observação": observacao
-        }])
+        # Nova linha para adicionar diretamente na folha
+        nova_linha = [
+            str(data_aposta),
+            plataforma,
+            usuario,
+            tipo,
+            f"R$ {valor:.2f}".replace(".", ","),
+            status,
+            observacao
+        ]
         
-        # Concatenar com os dados existentes
-        updated_df = pd.concat([df, novo_registo], ignore_index=True)
-        
-        # Atualizar a planilha no Google Sheets especificando o link e a aba
-        conn.update(spreadsheet=SHEET_URL, worksheet="Transações", data=updated_df)
+        sheet.append_row(nova_linha)
         st.sidebar.success("Registo adicionado com sucesso à planilha!")
         st.rerun()
     except Exception as err:
