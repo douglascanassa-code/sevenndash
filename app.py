@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from st_gsheets_connection import GSheetsConnection
+from streamlit_gsheets import GSheetsConnection
 
 # Configuração da página
 st.set_page_config(page_title="Painel de Finanças - Apostas", layout="wide")
